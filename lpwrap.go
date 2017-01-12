@@ -30,8 +30,36 @@ type LP struct {
 	Constraints []Constraint
 }
 
+// CondenseTerms combines the terms into a single vector and a constant term.
+// The end is w*x + con
+func CondenseTerms(terms []Term, nameMap map[string]int) (map[string]float64, float64) {
+	// Use a map to keep the sparsity.
+	var con float64
+	termMap := make(map[string]float64)
+	for _, term := range terms {
+		if term.Var == Constant {
+			con += term.Value
+			continue
+		}
+		termMap[term.Var] += term.Value
+	}
+	return termMap, con
+}
+
+// CondenseConstraint makes the constraint w*x OP con. Provides a map to keep sparsity.
+func CondenseConstraint(c Constraint, nameMap map[string]int) (map[string]float64, float64) {
+	ml, cl := CondenseTerms(c.Left, nameMap)
+	mr, cr := CondenseTerms(c.Right, nameMap)
+
+	for key, val := range mr {
+		ml[key] -= val // move the terms to the left hand side
+	}
+	con := cr - cl // move the constant to the right hand side
+	return ml, con
+}
+
 // indexVariables assigns each variable to an index.
-func indexVariables(lp LP) ([]string, map[string]int) {
+func IndexVariables(lp LP) ([]string, map[string]int) {
 	var names []string
 	nameMap := make(map[string]int)
 	for _, term := range lp.Objective.Terms {

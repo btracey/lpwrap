@@ -26,7 +26,7 @@ type Gonum struct{}
 
 // Gonum converts the problem into Gonum format.
 func (gonum Gonum) ConvertGonum(lp LP) GonumData {
-	names, nameMap := indexVariables(lp)
+	names, nameMap := IndexVariables(lp)
 	nVar := len(names)
 	c := make([]float64, nVar)
 	var offset float64
