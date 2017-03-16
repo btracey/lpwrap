@@ -1,8 +1,11 @@
 package lpwrap
 
 import (
+	"bufio"
+	"errors"
 	"io"
 	"strconv"
+	"strings"
 )
 
 // Gurobi interfaces
@@ -91,4 +94,30 @@ func (gur Gurobi) termsBytes(b []byte, m map[string]float64) []byte {
 		b = append(b, []byte(name)...)
 	}
 	return b
+}
+
+// ParseSol parses a solution file in Gurobi `.sol` format.
+func (gur Gurobi) ParseSol(f io.Reader) (map[string]float64, error) {
+	sol := make(map[string]float64)
+	scanner := bufio.NewScanner(f)
+	for scanner.Scan() {
+		txt := scanner.Text()
+		txt = strings.TrimSpace(txt)
+		if len(txt) == 0 {
+			continue
+		}
+		if txt[0] == '#' {
+			continue
+		}
+		strs := strings.Split(txt, " ")
+		if len(strs) != 2 {
+			return nil, errors.New("lpwrap: unexpected file format")
+		}
+		v, err := strconv.ParseFloat(strs[1], 64)
+		if err != nil {
+			return nil, errors.New("lpwrap: bad float parse")
+		}
+		sol[strs[0]] = v
+	}
+	return sol, nil
 }
