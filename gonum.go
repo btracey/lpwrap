@@ -1,8 +1,8 @@
 package lpwrap
 
 import (
-	"github.com/gonum/matrix/mat64"
-	"github.com/gonum/optimize/convex/lp"
+	"gonum.org/v1/gonum/mat"
+	"gonum.org/v1/gonum/optimize/convex/lp"
 )
 
 // GonumData represents a problem in a format useable by gonum/optimize/convex/lp.
@@ -12,9 +12,9 @@ import (
 //           A * x = b
 type GonumData struct {
 	C       []float64
-	G       mat64.Matrix
+	G       mat.Matrix
 	H       []float64
-	A       mat64.Matrix
+	A       mat.Matrix
 	B       []float64
 	Offset  float64 // term left off objective
 	Names   []string
@@ -78,10 +78,10 @@ func (gonum Gonum) ConvertGonum(lp LP) GonumData {
 	}
 }
 
-func (g Gonum) constraintsToMatrix(cons []Constraint, nameMap map[string]int) (*mat64.Dense, []float64) {
+func (g Gonum) constraintsToMatrix(cons []Constraint, nameMap map[string]int) (*mat.Dense, []float64) {
 	nCon := len(cons)
 	nVar := len(nameMap)
-	a := mat64.NewDense(nCon, nVar, nil)
+	a := mat.NewDense(nCon, nVar, nil)
 	b := make([]float64, nCon)
 
 	row := make([]float64, nVar)
